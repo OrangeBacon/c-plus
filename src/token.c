@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "token.h"
 #include "memory.h"
 
@@ -17,10 +18,12 @@ void stringToken(Token* token, TokenType type, char* lexeme, char* strLit, int l
   token->line = line;
 }
 
+char tokenNameBuffer[1024];
 const char* tokenToString(Token* token){
+  tokenNameBuffer[0] = '\0';
   const char* typeName = TokenNames[token->type];
-  int typeNameLen = strlen(typeName);
-  return typeName;
+  snprintf(tokenNameBuffer, 1024, "%s(%s)", typeName, token->lexeme);
+  return tokenNameBuffer;
 }
 
 void initTokenList(TokenList* tokenList){
@@ -42,29 +45,32 @@ void addToken(TokenList* tokenList, Token* token){
 }
 
 void addNumberToken(TokenList* tokenList, TokenType type, char* lexeme, int numLit, int line){
-  Token token;
-  numberToken(&token, type, lexeme, numLit, line);
-  addToken(tokenList, &token);
+  Token* token = (Token*)malloc(sizeof(Token));
+  numberToken(token, type, lexeme, numLit, line);
+  addToken(tokenList, token);
 }
 
 void addStringToken(TokenList* tokenList, TokenType type, char* lexeme, char* strLit, int line){
-  Token token;
-  stringToken(&token, type, lexeme, strLit, line);
-  addToken(tokenList, &token);
+  Token* token = (Token*)malloc(sizeof(Token));;
+  stringToken(token, type, lexeme, strLit, line);
+  addToken(tokenList, token);
 }
 
 Token* getToken(TokenList* tokenList, int idx){
-  return tokenList->tokens[idx * sizeof(Token)];
+  return tokenList->tokens[idx];
 }
 
 void freeTokenList(TokenList* tokenList){
+  for(int i = 0; i < tokenList->count; i++){
+    free(tokenList->tokens[i]);
+  }
   FREE_ARRAY(Token*, tokenList->tokens, tokenList->capacity);
   initTokenList(tokenList);
 }
 
 void printTokenList(TokenList* tokenList){
   printf("== TokenArray ==\n");
-  for(int i = 0; i < tokenList->count * sizeof(Token); i++){
-    printf("%s\n", tokenToString(tokenList->tokens[i]));
+  for(int i = 0; i < tokenList->count; i++){
+    printf("%i : %s\n", i, tokenToString(tokenList->tokens[i]));
   }
 }
