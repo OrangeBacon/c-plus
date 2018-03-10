@@ -18,7 +18,7 @@ void stringToken(Token* token, TokenType type, char* lexeme, char* strLit, int l
   token->line = line;
 }
 
-char tokenNameBuffer[1024];
+char tokenNameBuffer[1024]; // use buffer to avoid having to malloc and free string
 const char* tokenToString(Token* token){
   tokenNameBuffer[0] = '\0';
   const char* typeName = TokenNames[token->type];
@@ -45,12 +45,14 @@ void addToken(TokenList* tokenList, Token* token){
 }
 
 void addNumberToken(TokenList* tokenList, TokenType type, char* lexeme, int numLit, int line){
+  // malloc new token, adding local variable is undefined behaviour
   Token* token = (Token*)malloc(sizeof(Token));
   numberToken(token, type, lexeme, numLit, line);
   addToken(tokenList, token);
 }
 
 void addStringToken(TokenList* tokenList, TokenType type, char* lexeme, char* strLit, int line){
+  // malloc new token, adding local variable is undefined behaviour
   Token* token = (Token*)malloc(sizeof(Token));;
   stringToken(token, type, lexeme, strLit, line);
   addToken(tokenList, token);
@@ -62,9 +64,11 @@ Token* getToken(TokenList* tokenList, int idx){
 
 void freeTokenList(TokenList* tokenList){
   for(int i = 0; i < tokenList->count; i++){
-    free(tokenList->tokens[i]);
+    free(tokenList->tokens[i]); // free each token malloc'd in list
   }
+  // realloc array to 0 size
   FREE_ARRAY(Token*, tokenList->tokens, tokenList->capacity);
+  // set capacity and count to 0
   initTokenList(tokenList);
 }
 

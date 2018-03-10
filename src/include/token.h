@@ -5,13 +5,14 @@
 #include <stdio.h>
 #include "tokentype.h"
 
-typedef enum {
+typedef enum { // tagged union type
   TOKEN_NUMBER, TOKEN_STRING
 } TokenUnionType;
 
 typedef struct {
   TokenType type;
   char* lexeme;
+  // tagged union
   TokenUnionType unionType;
   union {
     int numLit;
@@ -32,6 +33,8 @@ typedef struct {
 
 void initTokenList(TokenList* tokenList);
 void addToken(TokenList* tokenList, Token* token);
+
+// wrappers around numberToken and stringToken
 void addNumberToken(TokenList* tokenList, TokenType type, char* lexeme, int numLit, int line);
 void addStringToken(TokenList* tokenList, TokenType type, char* lexeme, char* strLit, int line);
 Token* getToken(TokenList* tokenList, int idx);
